@@ -1,0 +1,102 @@
+<div class="card text-center">
+  <div class="card-header">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="active" [destroyOnHide]="false" class="nav-tabs">
+        <li [ngbNavItem]="1" [destroyOnHide]="true">
+          <a ngbNavLink>House</a>
+        
+          <ng-template ngbNavContent>
+            <div class="card text-dark bg-light mb-3">
+              <div class="card-body">
+                <h1 class="card-title text-center">{{ selectedHouse.name }}</h1>
+                <img *ngIf="(selectedHouse.image)" class="card-img-top overflow-hidden" src="assets/images/{{selectedHouse.image}}" />
+                <figure *ngIf="(selectedHouse.words)" class="text-center card-text alert alert-primary">
+                  <blockquote class="blockquote">
+                    {{ selectedHouse.words }}
+                  </blockquote>
+                  <figcaption class="blockquote-footer">
+                    words of <cite title="{{ selectedHouse.name }}">{{ selectedHouse.name }}</cite>
+                  </figcaption>
+                </figure>
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item" *ngIf="(selectedHouse.region)"><h4>Region: {{ selectedHouse.region }}</h4></li>
+                <li class="list-group-item" *ngIf="(selectedHouse.coatOfArms)"><strong>Coat Of Arms:</strong> {{ selectedHouse.coatOfArms }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.titles && selectedHouse.titles.length > 1)"><strong>Titles:</strong> {{ selectedHouse.titles }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.seats && selectedHouse.seats.length > 1)"><strong>Seats:</strong> {{ selectedHouse.seats }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.currentLord)"><strong>Current lord:</strong> {{ selectedHouse.currentLord }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.heir)"><strong>Heir:</strong> {{ selectedHouse.heir }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.founded)"><strong>Founded:</strong> {{ selectedHouse.founded }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.founder)"><strong>Founder:</strong> {{ selectedHouse.founder }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.diedOut)"><strong>Died out:</strong> {{ selectedHouse.diedOut }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.ancestralWeapons && selectedHouse.ancestralWeapons.length > 1)"><strong>Ancestral weapons:</strong> {{ selectedHouse.ancestralWeapons }}</li>
+                <li class="list-group-item" *ngIf="(selectedHouse.swornMembers)">
+                  <strong>Sworn members:</strong><br>
+                  {{ selectedHouse.swornMembers }}
+                </li>
+              </ul>
+              <div class="card-body">
+                <ul class="list-unstyled">
+                  <li *ngIf="(selectedHouse.overlord && selectedHouse.overlord.length)" class="mb-3">
+                    <a href="#" (click)="HouseListComponent.selectHouseByUrl(selectedHouse.overlord, 'overlord');showTab(2)" >
+                      Show overlord
+                    </a>
+                  </li>
+                  <li *ngIf="(selectedHouse.cadetBranches && selectedHouse.cadetBranches.length)" class="mb-3">
+                    <a href="#" (click)="HouseListComponent.selectHouseByUrl(selectedHouse.cadetBranches, 'cadetBranches');showTab(3)" >
+                      Show cadet branches
+                    </a>
+                  </li>
+                  <li class="mb-3">
+                    <a href="#" (click)="HouseListComponent.backToOverviewPage(pageNum)" >
+                      Back to the list of houses
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li [ngbNavItem]="2" *ngIf="(selectedHouse.overlord)">
+          <a ngbNavLink (click)="HouseListComponent.selectHouseByUrl(selectedHouse.overlord, 'overlord');showTab(2)">Overlord</a>
+
+          <ng-template ngbNavContent>
+            <div class="card">
+              <div class="card-body">
+                <div *ngIf="showOverlordPlaceholder">
+                  <div class="spinner">
+                    <div class="double-bounce1"></div>
+                    <div class="double-bounce2"></div>
+                  </div>
+                </div>
+                <div *ngIf="(overlord.name.length)" (click)="HouseListComponent.selectHouse(overlord);showTab(1)">
+                  <span class="textlink" >{{overlord.name}}</span>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li [ngbNavItem]="3" *ngIf="(selectedHouse.cadetBranches && selectedHouse.cadetBranches.length > 0)">
+          <a ngbNavLink (click)="HouseListComponent.selectHouseByUrl(selectedHouse.cadetBranches, 'cadetBranches');showTab(3)">Cadets</a>
+
+          <ng-template ngbNavContent>
+            <div class="card">
+              <div class="card-body">
+                <div *ngIf="showCadetsPlaceholder">
+                  <div class="spinner">
+                    <div class="double-bounce1"></div>
+                    <div class="double-bounce2"></div>
+                  </div>            
+                </div>
+                <div *ngFor="let cadetBranch of cadetBranches">
+                  <span (click)="HouseListComponent.selectHouse(cadetBranch);showTab(1)" class="textlink" >{{ cadetBranch.name }}</span>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+    </div>
+</div>
+      
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+    

@@ -1,0 +1,48 @@
+<div class="container mb-5 pb-5">
+  <div class="mb-3">Angular Demo with the <a href="https://anapioficeandfire.com" target="_blank">Game Of Thrones API</a> created by Zoryana Paliy.</div>
+  <div *ngIf="!(selectedHouse && selectedHouse.name)" class="sticky-top nav-letters bg-white w-100">
+    <ul class="nav nav-pills list-inline">
+      <li class="nav-item mb-1 list-inline-item" *ngFor="let letter of letters | keyvalue">
+        <a class="nav-link active" aria-current="page" href="#{{letter.value}}" (click)="scrollIntoView(letter.value)">{{ letter.key }}</a>
+      </li>
+    </ul>
+  </div>
+  <section *ngIf="houses.length" id="allHouses">
+    <div class="row" >
+      <div [@fadeInOut] class="col-12 p-3 col-md-4" *ngFor="let house of houses">
+          <div class="card" id="{{house.id}}">
+            <img *ngIf="(house.image)" class="card-img-top overflow-hidden" style="height: 120px;"src="assets/images/{{house.image}}" />
+            <div *ngIf="(!house.image)" class="card-img-top bg-secondary overflow-hidden" style="height: 120px;">
+              <span class="text-large text-white houseNameOnImg">{{ house.nameTrimmed }}</span>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title" (click)="selectHouse(house)">{{ house.name }}</h5>
+              <p>
+                <span class="badge bg-secondary m-1" *ngIf="(house.cadetBranches && house.cadetBranches.length > 0)">Cadet branches</span>
+                <span class="badge bg-info text-dark m-1" *ngIf="(house.overlord && house.overlord.length > 0)">Overlord</span>
+                <span class="badge bg-success m-1" *ngIf="(house.heir)">Heir</span>
+                <span class="badge bg-danger m-1" *ngIf="(house.diedOut)">Died out</span>
+                <span class="badge bg-primary m-1" *ngIf="(house.swornMembers)">Sworn members</span>
+              </p>
+              <a href="#" (click)="selectHouse(house)" class="btn btn-primary">Show Details</a>
+            </div>
+          </div>
+      </div>          
+    </div>
+      <div *ngIf="!(allShown)" class="spinner">
+        <div class="double-bounce1"></div>
+        <div class="double-bounce2"></div>
+      </div>
+      <div
+        class="search-results"
+        infiniteScroll
+        [infiniteScrollDistance]="2"
+        [infiniteScrollThrottle]="50"
+        (scrolled)="onScroll()"
+      ></div>  
+  </section>
+  <section id="singleHouse" *ngIf="selectedHouse && selectedHouse.name">
+    <ngbd-nav-keep [selectedHouse]="selectedHouse" [overlord]="overlord" [cadetBranches]="cadetBranches" [pageNum]="pageNum"></ngbd-nav-keep>
+  </section>
+  </div>
+  

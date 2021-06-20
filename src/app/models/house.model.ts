@@ -4,7 +4,7 @@ export interface House {
     "name": any,
     "nameTrimmed"?: string,
     "url": string,
-    "id"?: string,
+    "id": string,
     "region"?: string,
     "coatOfArms"?: string,
     "words"?: string,
@@ -18,6 +18,6 @@ export interface House {
     "diedOut"?: string,
     "ancestralWeapons"?: [],
     "cadetBranches"?: string,
-    "swornMembers"?: string,
+    "swornMembers"?: string[],
     "image"?: string
 }

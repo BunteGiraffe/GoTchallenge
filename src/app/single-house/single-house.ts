@@ -20,9 +20,9 @@ export class SingleHouse {
   showOverlordPlaceholder = true;
   showCadetsPlaceholder = true;
 
-  @Input() selectedHouse: House = {name: '', url: ''};
-  @Input() overlord: House = {name: '', url: ''};
-  @Input() cadetBranches: Array<House> = [{name: '', url: ''}];
+  @Input() selectedHouse: House = {name: '', url: '', id: ''};
+  @Input() overlord: House = {name: '', url: '', id: ''};
+  @Input() cadetBranches: Array<House> = [{name: '', url: '', id:''}];
   @Input() pageNum: number = 1;
 
   ngOnInit() {
@@ -43,7 +43,6 @@ export class SingleHouse {
         this.showOverlordPlaceholder = true;
         break;
       default:
-        console.log(this.active);
         this.showCadetsPlaceholder = true;
         this.showOverlordPlaceholder = true;
         break;

@@ -20,12 +20,13 @@ export class HouseListComponent implements OnInit {
 
   houses: Array<House> = [];
   pageNum: number = 1;
-  selectedHouse: House = {name: '', url: ''};
-  overlord: House = {name: '', url: ''};
-  cadetBranches: Array<House> = [{name: '', url: ''}];
+  selectedHouse: House = {name: '', url: '', id: ''};
+  overlord: House = {name: '', url: '', id: ''};
+  cadetBranches: Array<House> = [{name: '', url: '', id: ''}];
   letters: Record<string,any> = {};
   allShown: boolean = false;
   newLoaded: boolean = true;
+  loadOnScroll: boolean = true;
 
   constructor(public apiService: GotApiService) { 
   }
@@ -35,16 +36,21 @@ export class HouseListComponent implements OnInit {
   }
 
   onScroll() {
-    this.loadNextPage(this.pageNum);
-    this.prepareNavigation();
+    if (this.loadOnScroll) {
+      this.loadNextPage(this.pageNum);
+      this.prepareNavigation();
+    }
   }
 
   public selectHouse(house: House) {
     this.selectedHouse = house;
-    this.overlord = {name: '', url: ''};
-    this.cadetBranches = [{name: '', url: ''}];
+    this.overlord = {name: '', url: '', id: ''};
+    this.cadetBranches = [{name: '', url: '', id: ''}];
+
     document.getElementById('singleHouse')?.classList.remove('d-none');
     document.getElementById('allHouses')?.classList.add('d-none');
+
+    this.loadOnScroll = false;
   }
 
   public async selectHouseByUrl(url: string | string[], typeOfObj: string) {
@@ -115,10 +121,13 @@ export class HouseListComponent implements OnInit {
   }
 
   public backToOverviewPage(pageNum: number) {
-    this.loadPage(pageNum);
-    this.selectedHouse = {name: '', url: ''};
+    //this.loadPage(pageNum);
+    this.selectedHouse = {name: '', url: '', id: ''};
+
     document.getElementById('singleHouse')?.classList.add('d-none');
     document.getElementById('allHouses')?.classList.remove('d-none');
+
+    this.loadOnScroll = true;
   }
 
 

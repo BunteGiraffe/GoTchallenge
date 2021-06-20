@@ -29,7 +29,7 @@
                 <li class="list-group-item" *ngIf="(selectedHouse.founder)"><strong>Founder:</strong> {{ selectedHouse.founder }}</li>
                 <li class="list-group-item" *ngIf="(selectedHouse.diedOut)"><strong>Died out:</strong> {{ selectedHouse.diedOut }}</li>
                 <li class="list-group-item" *ngIf="(selectedHouse.ancestralWeapons && selectedHouse.ancestralWeapons.length > 1)"><strong>Ancestral weapons:</strong> {{ selectedHouse.ancestralWeapons }}</li>
-                <li class="list-group-item" *ngIf="(selectedHouse.swornMembers)">
+                <li class="list-group-item" *ngIf="(selectedHouse.swornMembers && selectedHouse.swornMembers.length)">
                   <strong>Sworn members:</strong><br>
                   {{ selectedHouse.swornMembers }}
                 </li>
@@ -47,7 +47,7 @@
                     </a>
                   </li>
                   <li class="mb-3">
-                    <a href="#" (click)="HouseListComponent.backToOverviewPage(pageNum)" >
+                    <a href="#{{selectedHouse.id}}" (click)="HouseListComponent.backToOverviewPage(pageNum)" >
                       Back to the list of houses
                     </a>
                   </li>

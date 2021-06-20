@@ -1,12 +1,18 @@
 import { Injectable } from '@angular/core';
 import { House } from '../models/house.model';
 import { Character } from '../models/character.model';
-
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+ 
 @Injectable({
   providedIn: 'root'
 })
 
 export class GotApiService {
+  constructor(private http: HttpClient) { 
+    this.apiHousesEndpointUrl = GotApiService.API_URL + GotApiService.housesEndpoint;
+    this.apiCharactersEndpointUrl = GotApiService.API_URL + GotApiService.charactersEndpoint;
+  }
 
   static readonly API_URL = 'https://anapioficeandfire.com/api/';
   static readonly housesEndpoint = 'houses';
@@ -33,17 +39,16 @@ export class GotApiService {
         if (url in this.cache.pages) {
           return this.cache.pages[url].data; 
         }  
-        const response = await fetch(url);
-        const data = await response.json();
-
         let housesToReturn: Record<string,House> = {};
 
-        for (let index = 0; index < data.length; index++) {
-          let tempHouse = (await this.formHouseObject(data[index])).house;
-          let url = tempHouse.url;
-          housesToReturn[url] = tempHouse;
-          this.cache.houses[url] = tempHouse;
-        }
+        let request = await this.http.get<House[]>(url).pipe().toPromise();
+        request.forEach( (house) => {
+            this.formHouseObject(house).then((house) => {
+              housesToReturn[house.url] = house;
+              this.cache.houses[house.url] = house;
+            });
+          } 
+        );
 
         this.cache.pages[url] = {
           lastModified: new Date().toString(),
@@ -59,26 +64,27 @@ export class GotApiService {
     return {};
   }
 
-  private fetchCharacter = async (url: string): Promise<Character> => {
+  private fetchCharacter = async (url: string): Promise<string> => {
     try {
         if (url in this.cache.characters) {
           return this.cache.characters[url].data; 
         }  
-        const response = await fetch(url);
-        const data = await response.json();
+        let request = await this.http.get<Character>(url).pipe().toPromise().then( async (character) => {
+          this.cache.characters[url] = {
+            lastModified: new Date().toString(),
+            data: character.name
+          };   
+          return this.cache.characters[url].data;    
+        });
 
-        this.cache.characters[url] = {
-          lastModified: new Date().toString(),
-          data: data
-        }; 
+        return request;
 
-        return data;
     } catch (error) {
         if (error) {
           return error.message
         }
     }
-    return {name: ''};
+    return '';
   }
 
   private fetchSingleHouse = async (url: string): Promise<House> => {
@@ -86,20 +92,19 @@ export class GotApiService {
         if (url in this.cache.houses) {
           return this.cache.houses[url]; 
         }  
-        const response = await fetch(url);
-        const data = await response.json();
 
-        let tempHouse = (await this.formHouseObject(data)).house;
-
-        this.cache.houses[url] = tempHouse; 
-        return tempHouse;
-
+        let request = await this.http.get<House>(url).pipe().toPromise();
+        let tempHouse = await this.formHouseObject(request).then((tempHouse) => {
+          this.cache.houses[url] = tempHouse; 
+          return tempHouse;
+        } );
+        
     } catch (error) {
         if (error) {
           return error.message
         }
     }
-    return {name: '', url: ''};
+    return {name: '', url: '', id: ''};
   }
 
   public async getHousesForPage(pageNum: number) {
@@ -107,51 +112,48 @@ export class GotApiService {
     return result;
   }
 
-  public getCharacter(url: string) {
-    return this.fetchCharacter(url);
-  }
-
   public async getHouse(url: string) {
-    const data_1 = await this.fetchSingleHouse(url);
+    await this.fetchSingleHouse(url);
     return this.cache.houses[url];
   }
 
-  private async formHouseObject(data: any) {
+  private async formHouseObject(data: House) {
     this.swornMembersToReturn = [];
-    const currentLord = await this.fetchCharacter(data.currentLord).then((data) => {return data});
-    const heir = await this.fetchCharacter(data.heir).then((data) => {return data});
-    const founder = await this.fetchCharacter(data.founder).then((data) => {return data});
+
     const swornMembers = () => {
-        let swornMembers: [] = data.swornMembers;
+        let swornMembers: string[] = data.swornMembers ?? [];
         swornMembers.forEach( async element => {
-          let tempMember = await this.fetchCharacter(element).then((data) => {return data.name});
+          let tempMember = await this.fetchCharacter(element).then((data) => {return data} );
           this.swornMembersToReturn.push(tempMember);
         });
     }
 
-    let houseUrl = data.url;
     swornMembers();
-    
+        
     let tempHouse: House = {
       name: data.name,
       nameTrimmed: data.name.replace('House ', '').replace("'", '*'),
       url: data.url,
-      id: data.url.split('/').pop(),
+      id: data.url.split('/').pop() ?? '',
       region: data.region,
       coatOfArms: data.coatOfArms,
-      titles: data.titles.join(', '),
+      titles: data.titles ?? [],
       words: data.words,
-      seats: data.seats.join(', '),
-      currentLord: currentLord.name,
-      heir: heir.name,
+      seats: data.seats ?? [],
+      currentLord: data.currentLord ? data.currentLord : '',
+      heir: data.heir ? data.heir : '',
       overlord: data.overlord,
       founded: data.founded,
-      founder: founder.name,
+      founder: data.founder ? data.founder : '',
       diedOut: data.diedOut,
-      ancestralWeapons: data.ancestralWeapons.join(', '),
+      ancestralWeapons: data.ancestralWeapons ?? [],
       cadetBranches: data.cadetBranches,
-      swornMembers: this.swornMembersToReturn.join(', '),
+      swornMembers: this.swornMembersToReturn ?? [],
     };
+
+    data.currentLord ? this.fetchCharacter(data.currentLord).then( (character) => {tempHouse.currentLord = character}) : '';
+    data.heir ? this.fetchCharacter(data.heir).then( (character) => {tempHouse.heir = character}) : '';
+    data.founder ? this.fetchCharacter(data.founder).then( (character) => {tempHouse.founder = character}) : '';
 
     switch (tempHouse.nameTrimmed) {
       case 'Lannister of Casterly Rock':
@@ -167,11 +169,7 @@ export class GotApiService {
         break;
     }
 
-    return {url: houseUrl, house: tempHouse};
+    return tempHouse;
   }
 
-  constructor() { 
-    this.apiHousesEndpointUrl = GotApiService.API_URL + GotApiService.housesEndpoint;
-    this.apiCharactersEndpointUrl = GotApiService.API_URL + GotApiService.charactersEndpoint;
-  }
 }
